@@ -12,7 +12,6 @@ pipeline {
     }
 
     stages {
-
         stage('Build JAR') {
             steps {
                 echo '🔨 Compilation de l application...'
@@ -24,7 +23,7 @@ pipeline {
             steps {
                 echo '🐳 Construction et publication de l image Docker...'
                 script {
-                    // Change 'dockerhub' to 'docker-hub'
+                    // Uses 'docker-hub' credential ID as discussed
                     docker.withRegistry('https://index.docker.io/v1/', 'docker-hub') {
                         def app = docker.build("${DOCKERHUB_REPO}:latest")
                         app.push()
@@ -33,24 +32,26 @@ pipeline {
             }
         }
 
-stage('Deploy') {
-    steps {
-        echo '🚀 Déploiement de l application...'
-        script {
-            docker.withRegistry('https://index.docker.io/v1/', 'docker-hub') {
-                sh """
-                    docker stop ${CONTAINER_NAME} || true
-                    docker rm ${CONTAINER_NAME} || true
-                    docker pull ${DOCKERHUB_REPO}:latest
-                    docker run -d \
-                      --name ${CONTAINER_NAME} \
-                      -p ${APP_PORT}:${APP_PORT} \
-                      ${DOCKERHUB_REPO}:latest
-                """
+        stage('Deploy') {
+            steps {
+                echo '🚀 Déploiement de l application...'
+                script {
+                    // Ensures we are logged in to pull the image
+                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub') {
+                        sh """
+                            docker stop ${CONTAINER_NAME} || true
+                            docker rm ${CONTAINER_NAME} || true
+                            docker pull ${DOCKERHUB_REPO}:latest
+                            docker run -d \
+                              --name ${CONTAINER_NAME} \
+                              -p ${APP_PORT}:${APP_PORT} \
+                              ${DOCKERHUB_REPO}:latest
+                        """
+                    }
+                }
             }
         }
-    }
-}
+    } // <--- THIS WAS MISSING (Closes 'stages')
 
     post {
         success {
@@ -60,4 +61,4 @@ stage('Deploy') {
             echo '❌ Le pipeline a échoué.'
         }
     }
-}
+} // (Closes 'pipeline')
