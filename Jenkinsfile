@@ -24,7 +24,8 @@ pipeline {
             steps {
                 echo '🐳 Construction et publication de l image Docker...'
                 script {
-                    docker.withRegistry('', 'dockerhub') {
+                    // Change 'dockerhub' to 'docker-hub'
+                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub') {
                         def app = docker.build("${DOCKERHUB_REPO}:latest")
                         app.push()
                     }
@@ -32,9 +33,11 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
-            steps {
-                echo '🚀 Déploiement de l application...'
+stage('Deploy') {
+    steps {
+        echo '🚀 Déploiement de l application...'
+        script {
+            docker.withRegistry('https://index.docker.io/v1/', 'docker-hub') {
                 sh """
                     docker stop ${CONTAINER_NAME} || true
                     docker rm ${CONTAINER_NAME} || true
@@ -47,6 +50,7 @@ pipeline {
             }
         }
     }
+}
 
     post {
         success {
