@@ -6,6 +6,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class HelloController {
     @GetMapping("/hello")
     public String hello() {
-        return "return \"Hello CI/CD – automatic build!\";\n";
+        return "return \" TEST 2 Hello CI/CD – automatic build!\";\n";
     }
 }
