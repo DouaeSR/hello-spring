@@ -24,7 +24,7 @@ pipeline {
                 echo '🐳 Construction et publication de l image Docker...'
                 script {
                     // Uses 'docker-hub' credential ID as discussed
-                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub') {
+                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub') {
                         def app = docker.build("${DOCKERHUB_REPO}:latest")
                         app.push()
                     }
@@ -37,7 +37,7 @@ pipeline {
                 echo '🚀 Déploiement de l application...'
                 script {
                     // Ensures we are logged in to pull the image
-                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub') {
+                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub') {
                         sh """
                             docker stop ${CONTAINER_NAME} || true
                             docker rm ${CONTAINER_NAME} || true
